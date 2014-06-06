@@ -22,7 +22,7 @@ Tests setup
 There is a script called ``cloud_admin_setup.py`` under the setup folder.
 It creates a user called cloud_admin, a project called cloud_admin_project
 and a domain cloud_admin_domain. Will be considered a cloud_admin, a user
-which matches the following rule::
+which matches the following rule:
 
     "admin_required": "(role:admin or is_admin:1) and domain_id:cloud_admin_domain_id"
 
@@ -34,7 +34,8 @@ default policies file.
 Running the tests
 -----------------
 
-After the tests setup, just run the tests directly::
+After the tests setup, just run the tests directly:
+
     python project_admin_tests.py
 
 If you are interested in a smaller set of tests, open the tests file and comment
