@@ -5,7 +5,7 @@ import uuid
 
 
 """
-cloud_admin tests. Those tests run in the contest
+cloud_admin tests. Those tests run in the context
 of a cloud_admin.
 """
 

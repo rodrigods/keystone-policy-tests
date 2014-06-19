@@ -5,7 +5,7 @@ import uuid
 
 
 """
-project_admin tests. Those tests run in the contest
+project_admin tests. Those tests run in the context
 of a project_admin.
 """
 

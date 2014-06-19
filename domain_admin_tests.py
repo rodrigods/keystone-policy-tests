@@ -5,14 +5,14 @@ import uuid
 
 
 """
-domain tests. Those tests run in the contest
+domain tests. Those tests run in the context
 of a domain_admin.
 """
 
 class DomainAdminTests(keystonetests.KeystonePolicyTests):
 
     def setUp(self):
-        super(ProjectAdminTests, self).setUp()
+        super(DomainAdminTests, self).setUp()
 
         # Client used during tests
         self.client = utils.create_client_domain(self.d1admin.name,
@@ -21,7 +21,7 @@ class DomainAdminTests(keystonetests.KeystonePolicyTests):
                                                  'http://10.1.0.22:5000/v3')
 
 
-class ServicesTests(ProjectAdminTests):
+class ServicesTests(DomainAdminTests):
     #
     # SERVICES
     #
@@ -60,7 +60,7 @@ class ServicesTests(ProjectAdminTests):
         self._delete_test_service(test)
 
 
-class EndpointsTests(ProjectAdminTests):
+class EndpointsTests(DomainAdminTests):
     #
     # ENDPOINTS
     #
@@ -93,7 +93,7 @@ class EndpointsTests(ProjectAdminTests):
         self._delete_test_endpoint(service, endpoint)
 
 
-class DomainsTests(ProjectAdminTests):
+class DomainsTests(DomainAdminTests):
     #
     # DOMAINS
     #
@@ -132,7 +132,7 @@ class DomainsTests(ProjectAdminTests):
             self.fail('Unexpected exception raised: '
                       'self.client.roles.list(user=self.p1member,'
                       'domain=self.d1)')
-        # NOT AUTHORIZED 
+        # NOT AUTHORIZED
         with self.assertRaises(Exception):
             self.client.roles.list(user=self.p1member,
                                    domain=self.d1)
@@ -181,7 +181,7 @@ class DomainsTests(ProjectAdminTests):
             self.fail('Unexpected exception raised: '
                       'self.client.roles.list(group=self.g1,'
                       'domain=self.d1)')
-        # NOT AUTHORIZED 
+        # NOT AUTHORIZED
         with self.assertRaises(Exception):
             self.client.roles.list(group=self.g2,
                                    domain=self.d2)
@@ -206,7 +206,7 @@ class DomainsTests(ProjectAdminTests):
             self.client.domains.delete(self.d1)
 
 
-class ProjectsTests(ProjectAdminTests):
+class ProjectsTests(DomainAdminTests):
     #
     # PROJECTS
     #
@@ -421,7 +421,7 @@ class ProjectsTests(ProjectAdminTests):
             self.client.projects.delete(self.p2)
 
 
-class UsersTests(ProjectAdminTests):
+class UsersTests(DomainAdminTests):
     #
     # USERS
     #
@@ -526,7 +526,7 @@ class UsersTests(ProjectAdminTests):
                       'self.client.roles.list(user=self.p1admin)')
 
 
-class GroupsTests(ProjectAdminTests):
+class GroupsTests(DomainAdminTests):
     #
     # GROUPS
     #
@@ -587,7 +587,7 @@ class GroupsTests(ProjectAdminTests):
         test1 = self._delete_test_user(test1)
 
 
-class CredentialsTests(ProjectAdminTests):
+class CredentialsTests(DomainAdminTests):
     #
     # CREDENTIALS
     #
@@ -693,7 +693,7 @@ class CredentialsTests(ProjectAdminTests):
         self._delete_test_credential(test2)
 
 
-class RolesTests(ProjectAdminTests):
+class RolesTests(DomainAdminTests):
     #
     # ROLES
     #
@@ -737,7 +737,7 @@ class RolesTests(ProjectAdminTests):
         self._delete_test_role(test)
 
 
-# class PoliciesTests(ProjectAdminTests):
+# class PoliciesTests(DomainAdminTests):
 #     #
 #     # POLICIES
 #     #

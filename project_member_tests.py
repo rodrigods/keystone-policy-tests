@@ -5,14 +5,14 @@ import uuid
 
 
 """
-project_member tests. Those tests run in the contest
+project_member tests. Those tests run in the context
 of a project_member.
 """
 
 class ProjectMemberTests(keystonetests.KeystonePolicyTests):
 
     def setUp(self):
-        super(ProjectAdminTests, self).setUp()
+        super(ProjectMemberTests, self).setUp()
 
         # Client used during tests
         self.client = utils.create_client(self.p1member.name,
@@ -22,7 +22,7 @@ class ProjectMemberTests(keystonetests.KeystonePolicyTests):
                                           'http://10.1.0.22:5000/v3')
 
 
-class ServicesTests(ProjectAdminTests):
+class ServicesTests(ProjectMemberTests):
     #
     # SERVICES
     #
@@ -61,7 +61,7 @@ class ServicesTests(ProjectAdminTests):
         self._delete_test_service(test)
 
 
-class EndpointsTests(ProjectAdminTests):
+class EndpointsTests(ProjectMemberTests):
     #
     # ENDPOINTS
     #
@@ -94,7 +94,7 @@ class EndpointsTests(ProjectAdminTests):
         self._delete_test_endpoint(service, endpoint)
 
 
-class DomainsTests(ProjectAdminTests):
+class DomainsTests(ProjectMemberTests):
     #
     # DOMAINS
     #
@@ -188,7 +188,7 @@ class DomainsTests(ProjectAdminTests):
             self.client.domains.delete(self.d1)
 
 
-class ProjectsTests(ProjectAdminTests):
+class ProjectsTests(ProjectMemberTests):
     #
     # PROJECTS
     #
@@ -269,7 +269,7 @@ class ProjectsTests(ProjectAdminTests):
 
     def test_grant_group_role_in_project(self):
         test1 = self._create_test_group('test1', self.d1)
-        
+
         with self.assertRaises(Exception):
             utils.grant_group_project_role(self.client, self.member_role.id,
                                            test1.id, self.p1.id)
@@ -291,7 +291,7 @@ class ProjectsTests(ProjectAdminTests):
             self.client.projects.delete(self.p1)
 
 
-class UsersTests(ProjectAdminTests):
+class UsersTests(ProjectMemberTests):
     #
     # USERS
     #
@@ -370,7 +370,7 @@ class UsersTests(ProjectAdminTests):
                       'self.client.roles.list(user=self.p1member)')
 
 
-class GroupsTests(ProjectAdminTests):
+class GroupsTests(ProjectMemberTests):
     #
     # GROUPS
     #
@@ -423,7 +423,7 @@ class GroupsTests(ProjectAdminTests):
         test1 = self._delete_test_user(test1)
 
 
-class CredentialsTests(ProjectAdminTests):
+class CredentialsTests(ProjectMemberTests):
     #
     # CREDENTIALS
     #
@@ -467,7 +467,7 @@ class CredentialsTests(ProjectAdminTests):
         self._delete_test_credential(test1)
 
 
-class RolesTests(ProjectAdminTests):
+class RolesTests(ProjectMemberTests):
     #
     # ROLES
     #
@@ -508,7 +508,7 @@ class RolesTests(ProjectAdminTests):
         self._delete_test_role(test)
 
 
-# class PoliciesTests(ProjectAdminTests):
+# class PoliciesTests(ProjectMemberTests):
 #     #
 #     # POLICIES
 #     #
