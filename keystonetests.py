@@ -8,6 +8,7 @@ the basic structure: users, projects, domains,
 groups and roles.
 """
 
+
 class KeystonePolicyTests(unittest.TestCase):
 
     def _create_test_domain(self, name):
@@ -73,22 +74,38 @@ class KeystonePolicyTests(unittest.TestCase):
 
     def _create_roles(self):
         self.admin_role = utils.create_role(self.admin_client, 'admin')
-        self.member_role = utils.create_role(self.admin_client, '_member_')
+        self.member_role = utils.create_role(self.admin_client, 'Member')
+        self.cloud_admin_role = \
+            utils.create_role(self.admin_client, 'cloud_admin')
+        self.domain_admin_role = \
+            utils.create_role(self.admin_client, 'domain_admin')
+        self.project_admin_role = \
+            utils.create_role(self.admin_client, 'project_admin')
+        self.project_member_role = \
+            utils.create_role(self.admin_client, 'project_member')
 
     def _create_domains(self):
         self.d1 = utils.create_domain(self.admin_client, 'd1')
         utils.grant_domain_role(self.admin_client, self.admin_role.id,
                                 self.admin.id, self.d1.id)
+        utils.grant_domain_role(self.admin_client, self.cloud_admin_role.id,
+                                self.admin.id, self.d1.id)
         self.d2 = utils.create_domain(self.admin_client, 'd2')
         utils.grant_domain_role(self.admin_client, self.admin_role.id,
+                                self.admin.id, self.d2.id)
+        utils.grant_domain_role(self.admin_client, self.cloud_admin_role.id,
                                 self.admin.id, self.d2.id)
 
     def _create_projects(self):
         self.p1 = utils.create_project(self.admin_client, 'p1', self.d1.id)
         utils.grant_project_role(self.admin_client, self.admin_role.id,
                                  self.admin.id, self.p1.id)
+        utils.grant_project_role(self.admin_client, self.cloud_admin_role.id,
+                                 self.admin.id, self.p1.id)
         self.p2 = utils.create_project(self.admin_client, 'p2', self.d1.id)
         utils.grant_project_role(self.admin_client, self.admin_role.id,
+                                 self.admin.id, self.p2.id)
+        utils.grant_project_role(self.admin_client, self.cloud_admin_role.id,
                                  self.admin.id, self.p2.id)
 
     def _create_users(self):
@@ -123,32 +140,43 @@ class KeystonePolicyTests(unittest.TestCase):
 
     def _grant_roles(self):
         # p1
-        utils.grant_project_role(self.admin_client, self.admin_role.id,
+        utils.grant_project_role(self.admin_client, self.project_admin_role.id,
                                  self.p1admin.id, self.p1.id)
-        utils.grant_project_role(self.admin_client, self.member_role.id,
+        utils.grant_project_role(self.admin_client,
+                                 self.project_member_role.id,
                                  self.p1member.id, self.p1.id)
-        utils.grant_group_project_role(self.admin_client, self.member_role.id,
+        utils.grant_group_project_role(self.admin_client,
+                                       self.project_member_role.id,
                                        self.g1.id, self.p1.id)
 
         # p2
-        utils.grant_project_role(self.admin_client, self.admin_role.id,
+        utils.grant_project_role(self.admin_client,
+                                 self.project_admin_role.id,
                                  self.p2admin.id, self.p2.id)
-        utils.grant_project_role(self.admin_client, self.member_role.id,
+        utils.grant_project_role(self.admin_client,
+                                 self.project_member_role.id,
                                  self.p2member.id, self.p2.id)
-        utils.grant_group_project_role(self.admin_client, self.member_role.id,
+        utils.grant_group_project_role(self.admin_client,
+                                       self.project_member_role.id,
                                        self.g2.id, self.p2.id)
         # d1
-        utils.grant_domain_role(self.admin_client, self.admin_role.id,
+        utils.grant_domain_role(self.admin_client,
+                                self.domain_admin_role.id,
                                 self.d1admin.id, self.d1.id)
-        utils.grant_domain_role(self.admin_client, self.admin_role.id,
+        utils.grant_domain_role(self.admin_client,
+                                self.member_role.id,
                                 self.d1member.id, self.d1.id)
-        utils.grant_domain_role(self.admin_client, self.member_role.id,
+        utils.grant_domain_role(self.admin_client,
+                                self.member_role.id,
                                 self.p1admin.id, self.d1.id)
-        utils.grant_domain_role(self.admin_client, self.member_role.id,
+        utils.grant_domain_role(self.admin_client,
+                                self.member_role.id,
                                 self.p2admin.id, self.d2.id)
-        utils.grant_domain_role(self.admin_client, self.member_role.id,
+        utils.grant_domain_role(self.admin_client,
+                                self.member_role.id,
                                 self.p1member.id, self.d1.id)
-        utils.grant_domain_role(self.admin_client, self.member_role.id,
+        utils.grant_domain_role(self.admin_client,
+                                self.member_role.id,
                                 self.p2member.id, self.d2.id)
 
     def setUp(self):
@@ -174,7 +202,7 @@ class KeystonePolicyTests(unittest.TestCase):
             'cloud_admin',
             'cloud_admin',
             'cloud_admin_domain',
-            'http://10.1.0.22:5000/v3')
+            'http://localhost:5000/v3')
         self.admin = utils.find_user(self.admin_client, 'cloud_admin')
 
         self._create_roles()

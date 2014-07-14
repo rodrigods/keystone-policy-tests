@@ -9,6 +9,7 @@ project_member tests. Those tests run in the context
 of a project_member.
 """
 
+
 class ProjectMemberTests(keystonetests.KeystonePolicyTests):
 
     def setUp(self):
@@ -19,7 +20,7 @@ class ProjectMemberTests(keystonetests.KeystonePolicyTests):
                                           'p1member',
                                           self.p1.name,
                                           self.d1.name,
-                                          'http://10.1.0.22:5000/v3')
+                                          'http://localhost:5000/v3')
 
 
 class ServicesTests(ProjectMemberTests):

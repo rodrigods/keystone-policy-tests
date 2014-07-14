@@ -9,6 +9,7 @@ domain tests. Those tests run in the context
 of a domain_admin.
 """
 
+
 class DomainAdminTests(keystonetests.KeystonePolicyTests):
 
     def setUp(self):
@@ -18,7 +19,7 @@ class DomainAdminTests(keystonetests.KeystonePolicyTests):
         self.client = utils.create_client_domain(self.d1admin.name,
                                                  'd1admin',
                                                  self.d1.name,
-                                                 'http://10.1.0.22:5000/v3')
+                                                 'http://localhost:5000/v3')
 
 
 class ServicesTests(DomainAdminTests):

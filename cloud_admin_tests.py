@@ -9,6 +9,7 @@ cloud_admin tests. Those tests run in the context
 of a cloud_admin.
 """
 
+
 class CloudAdminTests(keystonetests.KeystonePolicyTests):
 
     def setUp(self):

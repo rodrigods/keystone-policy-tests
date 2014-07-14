@@ -3,7 +3,7 @@ import utils
 """
 In the case of using cloud_admin rule using
 a specific domain:
-"admin_required": "(role:admin or is_admin:1) 
+"admin_required": "(role:admin or is_admin:1)
 and domain_id:cloud_admin_domain_id",
 """
 
@@ -13,7 +13,7 @@ admin_client = utils.create_client('admin',
                                    'admin',
                                    'Default',
                                    'Default',
-                                   'http://10.1.0.22:5000/v3')
+                                   'http://localhost:5000/v3')
 
 # Create cloud_admin_domain
 admin_domain = utils.create_domain(admin_client, 'cloud_admin_domain')
