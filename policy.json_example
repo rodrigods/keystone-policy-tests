@@ -1,5 +1,6 @@
 {
     "cloud_admin": "(role:cloud_admin or is_admin:1) and domain_id:cloud_admin_domain_id",
+
     "service_role": "role:service",
     "service_or_cloud_admin": "rule:cloud_admin or rule:service_role",
     "owner" : "user_id:%(user_id)s or user_id:%(target.user.id)s",
@@ -15,6 +16,7 @@
     "project_member": "role:project_member and (rule:matching_target_project_id or rule:matching_target_user_project_id)",
 
     "any_valid": "rule:cloud_admin or rule:project_admin or rule:project_member or rule:domain_admin",
+    "default":"rule:cloud_admin",
 
     "identity:get_region": "",
     "identity:list_regions": "",
