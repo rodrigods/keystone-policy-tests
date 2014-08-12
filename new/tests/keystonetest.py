@@ -194,8 +194,8 @@ class DomainTestCase(KeystoneTestCase):
 class ProjectTestCase(KeystoneTestCase):
 
     def _create_roles(self):
-        self.r1 = self.cloud_admin_client.create_role('project_admin')
-        self.r2 = self.cloud_admin_client.create_role('project_member')
+        self.project_admin_role = self.cloud_admin_client.create_role('project_admin')
+        self.project_admin_member = self.cloud_admin_client.create_role('project_member')
 
     def _create_users(self):
 	self.p1_admin = self.cloud_admin_client.create_user('p1_admin', 'p1_admin', 'd1', 'p1')
@@ -204,14 +204,23 @@ class ProjectTestCase(KeystoneTestCase):
 	self.p2_admin = self.cloud_admin_client.create_user('p2_admin', 'p2_admin', 'd1', 'p2')
 	self.p2_member = self.cloud_admin_client.create_user('p2_member', 'p2_member', 'd1', 'p2')
 
-    def _create_group(self):
+    def _create_groups(self):
 	self.g1 = self.cloud_admin_client.create_group('g1', 'd1')
 	self.g2 = self.cloud_admin_client.create_group('g2', 'd1')
+
+    def _grant_roles(self):
+	self.cloud_admin_client.grant_project_role(self.project_admin, self.p1_admin, self.p1)
+	self.cloud_admin_client.grant_project_role(self.project_member, self.p1_member, self.p1)
+
+	self.cloud_admin_client.grant_project_role(self.project_admin, self.p2_admin, self.p2)
+	self.cloud_admin_client.grant_project_role(self.project_member, self.p2_member, self.p2)
 
     def setUp(self):
         super(ProjectTestCase, self).setUp()
 	self._create_roles()
 	self._create_users()
+	self._create_groups()
+	self._grant_roles()
 
         self.should_get_projects = False
         self.should_get_project_info = False
