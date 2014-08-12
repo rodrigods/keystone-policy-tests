@@ -3,6 +3,7 @@ import models
 
 from keystoneclient.v3 import client as keystoneclient
 
+
 class Client:
 
     def __init__(self, keystone_client):
@@ -16,6 +17,7 @@ class Client:
                                             project_name=project.name,
                                             project_domain_name=project.domain.name,
                                             auth_url=auth_url))
+
     @classmethod
     def for_domain(cls, user_name, password, domain_name, auth_url):
         return keystoneclient.Client(username=user_name,
@@ -23,17 +25,16 @@ class Client:
                                      domain_name=domain_name,
                                      auth_url=auth_url)
 
-
     def create_region(self):
-    	pass
+        pass
 
     def read_region(self):
-    	pass
+        pass
 
     def update_region(self):
-    	pass
+        pass
 
     def delete_region(self):
-    	pass
+        pass
 
-	# CRUD for each model
+        # CRUD for each model

@@ -1,57 +1,75 @@
 
 class Region:
-	pass
+    pass
+
 
 class Service:
-	pass
+    pass
+
 
 class Endpoint:
-	pass
+    pass
+
 
 class Domain:
-	pass
+    pass
+
 
 class Project:
-	pass
+    pass
+
 
 class User:
-	pass
+    pass
+
 
 class Group:
-	pass
+    pass
+
 
 class Credential:
-	pass
+    pass
+
 
 class Role:
-	pass
+    pass
+
 
 class Grant:
-	pass
+    pass
+
 
 class Policy:
-	pass
+    pass
+
 
 class Token:
-	pass
+    pass
+
 
 class Trust:
-	pass
+    pass
+
 
 class Consumer:
-	pass
+    pass
+
 
 class AccessToken:
-	pass
+    pass
+
 
 class RequestToken:
-	pass
+    pass
+
 
 class IdentityProvider:
-	pass
+    pass
+
 
 class Protocol:
-	pass
+    pass
+
 
 class Mapping:
-	pass
+    pass

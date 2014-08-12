@@ -2,12 +2,14 @@
 from contextlib import contextmanager
 
 import abc
+import ConfigParser
+import shutil
 import unittest
 
 from utils.client import *
 
 class KeystoneTestCase(unittest.TestCase):
-    
+
     @classmethod
     def setUpClass(cls):
         pass
@@ -57,15 +59,15 @@ class ServiceTestCase(KeystoneTestCase):
     def test_get_service(self):
         with self.throws_no_exception_if(self.should_get_service):
             pass
- 
+
     def test_update_service(self):
         with self.throws_no_exception_if(self.should_update_service):
             pass
- 
+
     def test_delete_service(self):
         with self.throws_no_exception_if(self.should_delete_service):
             pass
- 
+
 
 class EndpointTestCase(KeystoneTestCase):
 
@@ -301,7 +303,7 @@ class UserTestCase(KeystoneTestCase):
 
 
 class GroupTestCase(KeystoneTestCase):
- 
+
     def setUp(self):
         super(GroupTestCase, self).setUp()
 
@@ -351,8 +353,9 @@ class GroupTestCase(KeystoneTestCase):
         with self.throws_no_exception_if(self.should_revoke_user_in_group):
             pass
 
+
 class CredentialTestCase(KeystoneTestCase):
- 
+
     def setUp(self):
         super(CredentialTestCase, self).setUp()
 
@@ -384,7 +387,7 @@ class CredentialTestCase(KeystoneTestCase):
 
 
 class RoleTestCase(KeystoneTestCase):
- 
+
     def setUp(self):
         super(RoleTestCase, self).setUp()
 
@@ -453,6 +456,28 @@ class ProtocolTestCase(KeystoneTestCase):
 
 class MappingTestCase(KeystoneTestCase):
     pass
+
+def setup_cloud_admin_user(config):
+    # cp setup policy to keystone policy path
+    src = config.get('setup_tests_policy', 'policy.setup.json')
+    dst = config.get('keystone_policy_file', '/etc/keystone/policy.json')
+    shutil.copyfile(src, dst)
+
+    # create cloud_admin_role
+    # create cloud_admin_domain
+    # create cloud_admin_user
+    # grant cloud_admin_role to cloud_admin_user at cloud_admin_domain
+
+def delete_cloud_admin_user():
+    pass
+
+def setUpModule():
+    config = ConfigParser.ConfigParser()
+    config.read('setup.cfg')
+    setup_cloud_admin_user(config)
+
+def tearDownModule():
+    delete_cloud_admin_user()
 
 if __name__ == "__main__":
     unittest.main()
