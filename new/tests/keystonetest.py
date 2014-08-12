@@ -2,11 +2,12 @@
 from contextlib import contextmanager
 
 import abc
-import ConfigParser
+import config
 import shutil
 import unittest
 
-from utils.client import *
+from utils import client
+
 
 class KeystoneTestCase(unittest.TestCase):
 
@@ -457,27 +458,40 @@ class ProtocolTestCase(KeystoneTestCase):
 class MappingTestCase(KeystoneTestCase):
     pass
 
-def setup_cloud_admin_user(config):
-    # cp setup policy to keystone policy path
-    src = config.get('setup_tests_policy', 'policy.setup.json')
-    dst = config.get('keystone_policy_file', '/etc/keystone/policy.json')
-    shutil.copyfile(src, dst)
 
-    # create cloud_admin_role
-    # create cloud_admin_domain
-    # create cloud_admin_user
-    # grant cloud_admin_role to cloud_admin_user at cloud_admin_domain
-
-def delete_cloud_admin_user():
-    pass
+def load_policy(policy):
+    dst = config.keystone_policy_path
+    shutil.copyfile(policy, dst)
 
 def setUpModule():
-    config = ConfigParser.ConfigParser()
-    config.read('setup.cfg')
-    setup_cloud_admin_user(config)
+    # cp setup policy to keystone policy path
+    load_policy(config.setup_policy)
+
+    admin_client = client.Client.for_project('admin', 'admin', 'demo', 'Default', config.auth_url)
+
+    # create cloud_admin role
+    cloud_admin_role = admin_client.create_role('cloud_admin')
+
+    # create cloud_admin_domain
+    cloud_admin_domain = admin_client.create_domain('cloud_admin_domain')
+
+    # create cloud_admin_project
+    cloud_admin_project = admin_client.create_project('cloud_admin_project', 'cloud_admin_domain')
+
+    # create cloud_admin
+    cloud_admin = admin_client.create_user('cloud_admin',
+					   'cloud_admin',
+					   'cloud_admin_domain',
+					   'cloud_admin_project')
+
+    # grant cloud_admin role to cloud_admin_user at cloud_admin_domain
+    admin_client.grant_domain_role(cloud_admin_role, cloud_admin, cloud_admin_domain)
+
+    # cp tests policy to keystone policy path
+    load_policy(config.tests_policy)
 
 def tearDownModule():
-    delete_cloud_admin_user()
+    pass
 
 if __name__ == "__main__":
     unittest.main()

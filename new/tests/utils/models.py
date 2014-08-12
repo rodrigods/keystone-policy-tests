@@ -12,15 +12,23 @@ class Endpoint:
 
 
 class Domain:
-    pass
+    def __init__(self, name):
+        self.name = name
 
 
 class Project:
-    pass
+    def __init__(self, name, domain):
+        self.name = name
+        self.domain = domain
 
 
 class User:
-    pass
+    def __init__(self, name, password, domain, default_project, email=None):
+        self.name = name
+        self.password = password
+        self.email = email
+        self.domain = domain
+        self.default_project = default_project
 
 
 class Group:
