@@ -11,19 +11,41 @@ from utils import client
 
 class KeystoneTestCase(unittest.TestCase):
 
+    def _create_domains(self):
+        self.d1 = self.cloud_admin_client.create_domain('d1')
+        self.d2 = self.cloud_admin_client.create_domain('d2')
+
+    def _create_projects(self):
+        self.p1 = self.cloud_admin_client.create_project('p1', 'd1')
+        self.p2 = self.cloud_admin_client.create_project('p2', 'd1')
+
+    def _delete_domains(self):
+        self.cloud_admin_client.delete_domain('d1')
+        self.cloud_admin_client.delete_domain('d2')
+
+    def _delete_projects(self):
+        self.cloud_admin_client.delete_project('p1', 'd1')
+        self.cloud_admin_client.delete_project('p2', 'd1')
+
     @classmethod
     def setUpClass(cls):
-        pass
+	pass
 
     @classmethod
     def tearDownClass(cls):
-        pass
+	pass
 
     def setUp(self):
-        pass
+	self.cloud_admin_client = client.Client.for_domain('cloud_admin',
+							   'cloud_admin',
+							   'cloud_admin_domain',
+							   config.auth_url)
+        self._create_domains()
+	self._create_projects()
 
     def tearDown(self):
-        pass
+        self._delete_domains()
+	self._delete_projects()
 
     @contextmanager
     def throws_no_exception_if(self, enabled):
@@ -171,8 +193,25 @@ class DomainTestCase(KeystoneTestCase):
 
 class ProjectTestCase(KeystoneTestCase):
 
+    def _create_roles(self):
+        self.r1 = self.cloud_admin_client.create_role('project_admin')
+        self.r2 = self.cloud_admin_client.create_role('project_member')
+
+    def _create_users(self):
+	self.p1_admin = self.cloud_admin_client.create_user('p1_admin', 'p1_admin', 'd1', 'p1')
+	self.p1_member = self.cloud_admin_client.create_user('p1_member', 'p1_member', 'd1', 'p1')
+
+	self.p2_admin = self.cloud_admin_client.create_user('p2_admin', 'p2_admin', 'd1', 'p2')
+	self.p2_member = self.cloud_admin_client.create_user('p2_member', 'p2_member', 'd1', 'p2')
+
+    def _create_group(self):
+	self.g1 = self.cloud_admin_client.create_group('g1', 'd1')
+	self.g2 = self.cloud_admin_client.create_group('g2', 'd1')
+
     def setUp(self):
         super(ProjectTestCase, self).setUp()
+	self._create_roles()
+	self._create_users()
 
         self.should_get_projects = False
         self.should_get_project_info = False
@@ -463,11 +502,20 @@ def load_policy(policy):
     dst = config.keystone_policy_path
     shutil.copyfile(policy, dst)
 
+def replace_domain_id(source_policy, output_policy, domain_id):
+    infile = open(source_policy)
+    outfile = open(output_policy, 'w')
+    for line in infile:
+	line = line.replace('cloud_admin_domain_id', domain_id)
+	outfile.write(line)
+    infile.close()
+    outfile.close()
+
 def setUpModule():
+    admin_client = client.Client.for_project('admin', 'admin', 'demo', 'Default', config.auth_url)
+
     # cp setup policy to keystone policy path
     load_policy(config.setup_policy)
-
-    admin_client = client.Client.for_project('admin', 'admin', 'demo', 'Default', config.auth_url)
 
     # create cloud_admin role
     cloud_admin_role = admin_client.create_role('cloud_admin')
@@ -487,11 +535,20 @@ def setUpModule():
     # grant cloud_admin role to cloud_admin_user at cloud_admin_domain
     admin_client.grant_domain_role(cloud_admin_role, cloud_admin, cloud_admin_domain)
 
-    # cp tests policy to keystone policy path
-    load_policy(config.tests_policy)
+    # tests policy to keystone policy path replacing the cloud_admin_domain_id
+    replace_domain_id(config.tests_policy, config.keystone_policy_path, cloud_admin_domain.id)
 
 def tearDownModule():
-    pass
+    admin_client = client.Client.for_project('admin', 'admin', 'demo', 'Default', config.auth_url)
+
+    # cp setup policy to keystone policy path
+    load_policy(config.setup_policy)
+
+    # clear everything
+    admin_client.delete_user('cloud_admin')
+    admin_client.delete_project('cloud_admin_project', 'cloud_admin_domain')
+    admin_client.delete_domain('cloud_admin_domain')
+    admin_client.delete_role('cloud_admin')
 
 if __name__ == "__main__":
     unittest.main()

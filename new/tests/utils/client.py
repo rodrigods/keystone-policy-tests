@@ -19,10 +19,11 @@ class Client:
 
     @classmethod
     def for_domain(cls, username, password, domain_name, auth_url):
-        return keystoneclient.Client(username=user_name,
-                                     password=password,
-                                     domain_name=domain_name,
-                                     auth_url=auth_url)
+        return Client(keystoneclient.Client(username=username,
+					    password=password,
+					    user_domain_name=domain_name,
+					    domain_name=domain_name,
+					    auth_url=auth_url))
 
     def find_domain(self, name):
         return self.client.domains.find(name=name)
@@ -47,6 +48,11 @@ class Client:
             d = self.find_domain(name)
         return d
 
+    def delete_domain(self, name):
+        d = self.find_domain(name)
+	self.client.domains.update(d, enabled=False)
+	self.client.domains.delete(d)
+
     def create_project(self, name, domain):
         d = self.find_domain(domain)
         try:
@@ -56,6 +62,10 @@ class Client:
         except Exception:
             p = self.find_project(name, domain)
         return p
+
+    def delete_project(self, name, domain):
+        p = self.find_project(name, domain)
+	self.client.projects.delete(p)
 
     def create_user(self, name, password, domain, default_project):
         d = self.find_domain(domain)
@@ -71,12 +81,34 @@ class Client:
             u = self.find_user(name)
         return u
 
+    def delete_user(self, name):
+	u = self.find_user(name)
+	self.client.users.delete(u)
+
+    def create_group(self, name, domain):
+        d = self.find_domain(domain)
+        try:
+            g = self.client.groups.create(name=name,
+                                          description='optional',
+                                          domain=d)
+        except Exception:
+            g = self.find_group(name)
+        return g
+
+    def delete_group(self, name):
+	u = self.find_group(name)
+	self.client.groups.delete(u)
+
     def create_role(self, name):
         try:
             r = self.client.roles.create(name=name)
         except Exception:
             r = self.find_role(name)
         return r
+
+    def delete_role(self, name):
+	r = self.find_role(name)
+	self.client.roles.delete(r)
 
     def grant_project_role(self, role, user, project):
         self.client.roles.grant(role, user=user, project=project)
