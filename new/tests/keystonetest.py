@@ -11,21 +11,47 @@ from utils import client
 
 class KeystoneTestCase(unittest.TestCase):
 
-    def _create_domains(self):
-        self.d1 = self.cloud_admin_client.create_domain('d1')
-        self.d2 = self.cloud_admin_client.create_domain('d2')
+    def _create_domains(self, domains):
+	for d in domains:
+	   self.domains[d.name] = self.cloud_admin_client.create_domain(d)
 
-    def _create_projects(self):
-        self.p1 = self.cloud_admin_client.create_project('p1', 'd1')
-        self.p2 = self.cloud_admin_client.create_project('p2', 'd1')
+    def _create_projects(self, projects):
+	for p in projects:
+	   self.projects[p.name] = self.cloud_admin_client.create_project(p)
+
+    def _create_users(self, users):
+	for u in users:
+	   self.users[u.name] = self.cloud_admin_client.create_user(u)
+
+    def _create_groups(self, groups):
+	for g in groups:
+	   self.groups[g.name] = self.cloud_admin_client.create_group(g)
+
+    def _create_roles(self, roles):
+	for r in roles:
+	   self.roles[r.name] = self.cloud_admin_client.create_role(r)
 
     def _delete_domains(self):
-        self.cloud_admin_client.delete_domain('d1')
-        self.cloud_admin_client.delete_domain('d2')
+	for d in self.domains:
+	   self.cloud_admin_client.delete_domain(self.domains[d].name)
 
     def _delete_projects(self):
-        self.cloud_admin_client.delete_project('p1', 'd1')
-        self.cloud_admin_client.delete_project('p2', 'd1')
+	for p in self.projects:
+	   project_name = self.projects[p].name
+	   project_domain = self.projects[p].domain
+	   self.cloud_admin_client.delete_project(project_name, project_domain)
+
+    def _delete_users(self):
+	for u in self.users:
+   	   self.cloud_admin_client.delete_user(self.users[u].name)
+
+    def _delete_groups(self):
+	for g in self.groups:
+   	   self.cloud_admin_client.delete_group(self.groups[g].name)
+
+    def _delete_roles(self):
+	for r in self.roles:
+	   self.cloud_admin_client.delete_role(self.roles[r].name)
 
     @classmethod
     def setUpClass(cls):
@@ -36,16 +62,22 @@ class KeystoneTestCase(unittest.TestCase):
 	pass
 
     def setUp(self):
+	self.projects = {}
+	self.domains = {}
+	self.roles = {}
+	self.users = {}
+	self.groups = {}
+
 	self.cloud_admin_client = client.Client.for_domain('cloud_admin',
-							   'cloud_admin',
-							   'cloud_admin_domain',
-							   config.auth_url)
+		'cloud_admin', 'cloud_admin_domain', config.auth_url)
         self._create_domains()
 	self._create_projects()
 
     def tearDown(self):
         self._delete_domains()
 	self._delete_projects()
+	self._delete_users()
+	self._delete_groups()
 
     @contextmanager
     def throws_no_exception_if(self, enabled):
@@ -196,6 +228,10 @@ class ProjectTestCase(KeystoneTestCase):
     def _create_roles(self):
         self.project_admin_role = self.cloud_admin_client.create_role('project_admin')
         self.project_admin_member = self.cloud_admin_client.create_role('project_member')
+
+    def _delete_roles(self):
+	self.cloud_admin_client.delete_role(self.project_admin_role)
+	self.cloud_admin_client.delete_role(self.project_member_role)
 
     def _create_users(self):
 	self.p1_admin = self.cloud_admin_client.create_user('p1_admin', 'p1_admin', 'd1', 'p1')
@@ -527,19 +563,16 @@ def setUpModule():
     load_policy(config.setup_policy)
 
     # create cloud_admin role
-    cloud_admin_role = admin_client.create_role('cloud_admin')
+    cloud_admin_role = admin_client.create_role(model.Role('cloud_admin'))
 
     # create cloud_admin_domain
-    cloud_admin_domain = admin_client.create_domain('cloud_admin_domain')
+    cloud_admin_domain = admin_client.create_domain(model.Domain('cloud_admin_domain'))
 
     # create cloud_admin_project
-    cloud_admin_project = admin_client.create_project('cloud_admin_project', 'cloud_admin_domain')
+    cloud_admin_project = admin_client.create_project(model.Project('cloud_admin_project', 'cloud_admin_domain'))
 
     # create cloud_admin
-    cloud_admin = admin_client.create_user('cloud_admin',
-					   'cloud_admin',
-					   'cloud_admin_domain',
-					   'cloud_admin_project')
+    cloud_admin = admin_client.create_user(model.User('cloud_admin', 'cloud_admin_domain', 'cloud_admin_project'))
 
     # grant cloud_admin role to cloud_admin_user at cloud_admin_domain
     admin_client.grant_domain_role(cloud_admin_role, cloud_admin, cloud_admin_domain)

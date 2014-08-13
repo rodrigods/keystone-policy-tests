@@ -41,11 +41,11 @@ class Client:
     def find_role(self, name):
         return self.client.roles.find(name=name)
 
-    def create_domain(self, name):
+    def create_domain(self, domain):
         try:
-            d = self.client.domains.create(name=name)
+            d = self.client.domains.create(name=domain.name)
         except Exception:
-            d = self.find_domain(name)
+            d = self.find_domain(domain.name)
         return d
 
     def delete_domain(self, name):
@@ -53,46 +53,46 @@ class Client:
 	self.client.domains.update(d, enabled=False)
 	self.client.domains.delete(d)
 
-    def create_project(self, name, domain):
-        d = self.find_domain(domain)
+    def create_project(self, project):
+        d = self.find_domain(project.domain)
         try:
-            p = self.client.projects.create(name=name,
+            p = self.client.projects.create(name=project.name,
                                             description='optional',
                                             domain=d)
         except Exception:
-            p = self.find_project(name, domain)
+            p = self.find_project(project.name, project.domain)
         return p
 
     def delete_project(self, name, domain):
         p = self.find_project(name, domain)
 	self.client.projects.delete(p)
 
-    def create_user(self, name, password, domain, default_project):
-        d = self.find_domain(domain)
-        p = self.find_project(default_project, domain)
+    def create_user(self, user):
+        d = self.find_domain(user.domain)
+        p = self.find_project(user.default_project, user.domain)
         try:
-            u = self.client.users.create(name=name,
-                                         password=password,
+            u = self.client.users.create(name=user.name,
+                                         password=user.password,
                                          description='optional',
-                                         email=name + '@test.com',
+                                         email=user.email,
                                          domain=d,
                                          default_project=p)
         except Exception:
-            u = self.find_user(name)
+            u = self.find_user(user.name)
         return u
 
     def delete_user(self, name):
 	u = self.find_user(name)
 	self.client.users.delete(u)
 
-    def create_group(self, name, domain):
-        d = self.find_domain(domain)
+    def create_group(self, group):
+        d = self.find_domain(group.domain)
         try:
-            g = self.client.groups.create(name=name,
+            g = self.client.groups.create(name=group.name,
                                           description='optional',
                                           domain=d)
         except Exception:
-            g = self.find_group(name)
+            g = self.find_group(group.name)
         return g
 
     def delete_group(self, name):

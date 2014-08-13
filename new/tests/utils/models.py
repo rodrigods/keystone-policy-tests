@@ -23,16 +23,18 @@ class Project:
 
 
 class User:
-    def __init__(self, name, password, domain, default_project, email=None):
+    def __init__(self, name, domain, default_project, email=None):
         self.name = name
-        self.password = password
+        self.password = name
         self.email = email
         self.domain = domain
         self.default_project = default_project
 
 
 class Group:
-    pass
+    def __init__(self, name, domain):
+        self.name = name
+        self.domain = domain
 
 
 class Credential:
@@ -40,7 +42,8 @@ class Credential:
 
 
 class Role:
-    pass
+    def __init__(self, name):
+        self.name = name
 
 
 class Grant:
