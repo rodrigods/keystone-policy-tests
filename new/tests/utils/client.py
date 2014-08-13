@@ -26,30 +26,8 @@ class Client:
                                             domain_name=domain_name,
                                             auth_url=auth_url))
 
-    def find_domain(self, name):
-        return self.client.domains.find(name=name)
 
-    def find_project(self, name):
-        return self.client.projects.find(name=name)
-
-    def get_project(self, project):
-        return self.client.projects.get(project)
-
-    def list_projects(self, user=None):
-        return self.client.projects.list(user=user)
-
-    def update_project(self, project):
-        return self.client.projects.update(project, description='new description')
-
-    def find_group(self, name):
-        return self.client.groups.find(name=name)
-
-    def find_user(self, name):
-        return self.client.users.find(name=name)
-
-    def find_role(self, name):
-        return self.client.roles.find(name=name)
-
+    # DOMAIN
     def create_domain(self, domain):
         try:
             d = self.client.domains.create(name=domain.name)
@@ -61,6 +39,10 @@ class Client:
         self.client.domains.update(domain, enabled=False)
         self.client.domains.delete(domain)
 
+    def find_domain(self, name):
+        return self.client.domains.find(name=name)
+
+    # PROJECT
     def create_project(self, project):
         d = self.find_domain(project.domain)
         try:
@@ -74,6 +56,19 @@ class Client:
     def delete_project(self, project):
         self.client.projects.delete(project)
 
+    def find_project(self, name):
+        return self.client.projects.find(name=name)
+
+    def get_project(self, project):
+        return self.client.projects.get(project)
+
+    def list_projects(self, user=None):
+        return self.client.projects.list(user=user)
+
+    def update_project(self, project):
+        return self.client.projects.update(project, description='new description')
+
+    # USER
     def create_user(self, user):
         d = self.find_domain(user.domain)
         p = self.find_project(user.default_project)
@@ -88,9 +83,25 @@ class Client:
             u = self.find_user(user.name)
         return u
 
+    def find_user(self, name):
+        return self.client.users.find(name=name)
+
     def delete_user(self, user):
         self.client.users.delete(user)
 
+    def get_user(self, user):
+        self.client.users.get(user)
+
+    def list_users(self, domain):
+        self.client.users.list(domain=domain)
+
+    def update_user(self, user):
+        return self.client.users.update(user, description='new description')
+
+    def update_user_password(self, user):
+        return self.client.users.update(user, password='new_password')
+
+    # GROUP
     def create_group(self, group):
         d = self.find_domain(group.domain)
         try:
@@ -104,6 +115,25 @@ class Client:
     def delete_group(self, group):
         self.client.groups.delete(group)
 
+    def find_group(self, name):
+        return self.client.groups.find(name=name)
+
+    def list_groups(self, user=None, domain=None):
+        return self.client.groups.list(user=user, domain=domain)
+
+    def update_group(self, group):
+        return self.client.groups.update(group, description='new description')
+
+    def add_user_to_group(self, group, user):
+        return self.client.users.add_to_group(user=user, group=group)
+
+    def check_user_in_group(self, group, user):
+        return self.client.users.check_in_group(user=user, group=group)
+
+    def remove_user_from_group(self, group, user):
+        return self.client.users.remove_from_group(user=user, group=group)
+
+    # ROLE
     def create_role(self, role):
         try:
             r = self.client.roles.create(name=role.name)
@@ -113,6 +143,9 @@ class Client:
 
     def delete_role(self, role):
         self.client.roles.delete(role)
+
+    def find_role(self, name):
+        return self.client.roles.find(name=name)
 
     def grant_project_role(self, role, user, project):
         self.client.roles.grant(role, user=user, project=project)
