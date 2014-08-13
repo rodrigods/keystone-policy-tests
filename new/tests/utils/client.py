@@ -13,6 +13,7 @@ class Client:
     def for_project(cls, username, password, project, project_domain, auth_url):
         return Client(keystoneclient.Client(username=username,
                                             password=password,
+                                            user_domain_name=project_domain,
                                             project_name=project,
                                             project_domain_name=project_domain,
                                             auth_url=auth_url))
@@ -28,9 +29,11 @@ class Client:
     def find_domain(self, name):
         return self.client.domains.find(name=name)
 
-    def find_project(self, name, domain):
-        d = self.find_domain(domain)
-        return self.client.projects.find(name=name, domain=d)
+    def find_project(self, name):
+        return self.client.projects.find(name=name)
+
+    def get_project(self, project):
+        return self.client.projects.get(project)
 
     def find_group(self, name):
         return self.client.groups.find(name=name)
@@ -48,10 +51,9 @@ class Client:
             d = self.find_domain(domain.name)
         return d
 
-    def delete_domain(self, name):
-        d = self.find_domain(name)
-        self.client.domains.update(d, enabled=False)
-        self.client.domains.delete(d)
+    def delete_domain(self, domain):
+        self.client.domains.update(domain, enabled=False)
+        self.client.domains.delete(domain)
 
     def create_project(self, project):
         d = self.find_domain(project.domain)
@@ -60,16 +62,15 @@ class Client:
                                             description='optional',
                                             domain=d)
         except Exception:
-            p = self.find_project(project.name, project.domain)
+            p = self.find_project(project.name)
         return p
 
-    def delete_project(self, name, domain):
-        p = self.find_project(name, domain)
-        self.client.projects.delete(p)
+    def delete_project(self, project):
+        self.client.projects.delete(project)
 
     def create_user(self, user):
         d = self.find_domain(user.domain)
-        p = self.find_project(user.default_project, user.domain)
+        p = self.find_project(user.default_project)
         try:
             u = self.client.users.create(name=user.name,
                                          password=user.password,
@@ -81,9 +82,8 @@ class Client:
             u = self.find_user(user.name)
         return u
 
-    def delete_user(self, name):
-        u = self.find_user(name)
-        self.client.users.delete(u)
+    def delete_user(self, user):
+        self.client.users.delete(user)
 
     def create_group(self, group):
         d = self.find_domain(group.domain)
@@ -95,20 +95,18 @@ class Client:
             g = self.find_group(group.name)
         return g
 
-    def delete_group(self, name):
-        u = self.find_group(name)
-        self.client.groups.delete(u)
+    def delete_group(self, group):
+        self.client.groups.delete(group)
 
-    def create_role(self, name):
+    def create_role(self, role):
         try:
-            r = self.client.roles.create(name=name)
+            r = self.client.roles.create(name=role.name)
         except Exception:
-            r = self.find_role(name)
+            r = self.find_role(role.name)
         return r
 
-    def delete_role(self, name):
-        r = self.find_role(name)
-        self.client.roles.delete(r)
+    def delete_role(self, role):
+        self.client.roles.delete(role)
 
     def grant_project_role(self, role, user, project):
         self.client.roles.grant(role, user=user, project=project)

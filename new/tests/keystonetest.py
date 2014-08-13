@@ -6,10 +6,11 @@ import config
 import shutil
 import unittest
 
-from utils import client
-
+from utils.client import *
+from utils.models import *
 
 class KeystoneTestCase(unittest.TestCase):
+    __metaclass__ = abc.ABCMeta
 
     def _create_domains(self, domains):
         for d in domains:
@@ -33,26 +34,23 @@ class KeystoneTestCase(unittest.TestCase):
 
     def _delete_domains(self):
         for d in self.domains:
-            self.cloud_admin_client.delete_domain(self.domains[d].name)
+            self.cloud_admin_client.delete_domain(self.domains[d])
 
     def _delete_projects(self):
         for p in self.projects:
-            project_name = self.projects[p].name
-            project_domain = self.projects[p].domain
-            self.cloud_admin_client.delete_project(
-                project_name, project_domain)
+            self.cloud_admin_client.delete_project(self.projects[p])
 
     def _delete_users(self):
         for u in self.users:
-            self.cloud_admin_client.delete_user(self.users[u].name)
+            self.cloud_admin_client.delete_user(self.users[u])
 
     def _delete_groups(self):
         for g in self.groups:
-            self.cloud_admin_client.delete_group(self.groups[g].name)
+            self.cloud_admin_client.delete_group(self.groups[g])
 
     def _delete_roles(self):
         for r in self.roles:
-            self.cloud_admin_client.delete_role(self.roles[r].name)
+            self.cloud_admin_client.delete_role(self.roles[r])
 
     @classmethod
     def setUpClass(cls):
@@ -69,15 +67,15 @@ class KeystoneTestCase(unittest.TestCase):
         self.users = {}
         self.groups = {}
 
-        self.cloud_admin_client = client.Client.for_domain('cloud_admin', 'cloud_admin', 'cloud_admin_domain', config.auth_url)
-        self._create_domains()
-        self._create_projects()
+        self.cloud_admin_client = Client.for_domain(
+                'cloud_admin', 'cloud_admin', 'cloud_admin_domain', config.auth_url)
 
     def tearDown(self):
-        self._delete_domains()
-        self._delete_projects()
+        self._delete_roles()
         self._delete_users()
         self._delete_groups()
+        self._delete_projects()
+        self._delete_domains()
 
     @contextmanager
     def throws_no_exception_if(self, enabled):
@@ -86,6 +84,10 @@ class KeystoneTestCase(unittest.TestCase):
         else:
             with self.assertRaises(Exception):
                 yield
+
+    @abc.abstractmethod
+    def role_name(self):
+        pass
 
 
 class RegionTestCase(KeystoneTestCase):
@@ -225,51 +227,26 @@ class DomainTestCase(KeystoneTestCase):
 
 class ProjectTestCase(KeystoneTestCase):
 
-    def _create_roles(self):
-        self.project_admin_role = self.cloud_admin_client.create_role(
-            'project_admin')
-        self.project_admin_member = self.cloud_admin_client.create_role(
-            'project_member')
-
-    def _delete_roles(self):
-        self.cloud_admin_client.delete_role(self.project_admin_role)
-        self.cloud_admin_client.delete_role(self.project_member_role)
-
-    def _create_users(self):
-        self.p1_admin = self.cloud_admin_client.create_user(
-            'p1_admin', 'p1_admin', 'd1', 'p1')
-        self.p1_member = self.cloud_admin_client.create_user(
-            'p1_member', 'p1_member', 'd1', 'p1')
-
-        self.p2_admin = self.cloud_admin_client.create_user(
-            'p2_admin', 'p2_admin', 'd1', 'p2')
-        self.p2_member = self.cloud_admin_client.create_user(
-            'p2_member', 'p2_member', 'd1', 'p2')
-
-    def _create_groups(self):
-        self.g1 = self.cloud_admin_client.create_group('g1', 'd1')
-        self.g2 = self.cloud_admin_client.create_group('g2', 'd1')
-
     def _grant_roles(self):
         self.cloud_admin_client.grant_project_role(
-            self.project_admin, self.p1_admin, self.p1)
+            self.roles[self.role_name()], self.users['test_user'], self.projects['test_project'])
         self.cloud_admin_client.grant_project_role(
-            self.project_member, self.p1_member, self.p1)
-
-        self.cloud_admin_client.grant_project_role(
-            self.project_admin, self.p2_admin, self.p2)
-        self.cloud_admin_client.grant_project_role(
-            self.project_member, self.p2_member, self.p2)
+            self.roles['test_role'], self.users['other_user'], self.projects['other_project'])
 
     def setUp(self):
         super(ProjectTestCase, self).setUp()
-        self._create_roles()
-        self._create_users()
-        self._create_groups()
+        self._create_roles([Role(self.role_name()), Role('test_role')])
+        self._create_domains([Domain('test_domain')])
+        self._create_projects([Project('test_project', 'test_domain'), Project('other_project', 'test_domain')])
+        self._create_users([User('test_user', 'test_domain', 'test_project'),
+                            User('other_user', 'test_domain', 'other_project')])
         self._grant_roles()
 
+        self.client = Client.for_project('test_user', 'test_user', 'test_project', 'test_domain', config.auth_url)
+
         self.should_get_projects = False
-        self.should_get_project_info = False
+        self.should_get_own_project_info = False
+        self.should_get_any_project_info = False
         self.should_update_project = False
         self.should_list_project_users = False
         self.should_list_project_user_roles = False
@@ -287,9 +264,13 @@ class ProjectTestCase(KeystoneTestCase):
         with self.throws_no_exception_if(self.should_get_projects):
             pass
 
-    def test_get_project_info(self):
-        with self.throws_no_exception_if(self.should_get_project_info):
-            pass
+    def test_get_own_project_info(self):
+        with self.throws_no_exception_if(self.should_get_own_project_info):
+            self.client.get_project(self.projects['test_project'])
+
+    def test_get_any_project_info(self):
+        with self.throws_no_exception_if(self.should_get_any_project_info):
+            self.client.get_project(self.projects['other_project'])
 
     def test_update_project(self):
         with self.throws_no_exception_if(self.should_update_project):
@@ -569,26 +550,26 @@ def replace_domain_id(source_policy, output_policy, domain_id):
 
 
 def setUpModule():
-    admin_client = client.Client.for_project(
+    admin_client = Client.for_project(
         'admin', 'admin', 'demo', 'Default', config.auth_url)
 
     # cp setup policy to keystone policy path
     load_policy(config.setup_policy)
 
     # create cloud_admin role
-    cloud_admin_role = admin_client.create_role(model.Role('cloud_admin'))
+    cloud_admin_role = admin_client.create_role(Role('cloud_admin'))
 
     # create cloud_admin_domain
     cloud_admin_domain = admin_client.create_domain(
-        model.Domain('cloud_admin_domain'))
+        Domain('cloud_admin_domain'))
 
     # create cloud_admin_project
     cloud_admin_project = admin_client.create_project(
-        model.Project('cloud_admin_project', 'cloud_admin_domain'))
+        Project('cloud_admin_project', 'cloud_admin_domain'))
 
     # create cloud_admin
     cloud_admin = admin_client.create_user(
-        model.User('cloud_admin', 'cloud_admin_domain', 'cloud_admin_project'))
+        User('cloud_admin', 'cloud_admin_domain', 'cloud_admin_project'))
 
     # grant cloud_admin role to cloud_admin_user at cloud_admin_domain
     admin_client.grant_domain_role(
@@ -600,17 +581,17 @@ def setUpModule():
 
 
 def tearDownModule():
-    admin_client = client.Client.for_project(
+    admin_client = Client.for_project(
         'admin', 'admin', 'demo', 'Default', config.auth_url)
 
     # cp setup policy to keystone policy path
     load_policy(config.setup_policy)
 
     # clear everything
-    admin_client.delete_user('cloud_admin')
-    admin_client.delete_project('cloud_admin_project', 'cloud_admin_domain')
-    admin_client.delete_domain('cloud_admin_domain')
-    admin_client.delete_role('cloud_admin')
+    admin_client.delete_user(admin_client.find_user('cloud_admin'))
+    admin_client.delete_project(admin_client.find_project('cloud_admin_project'))
+    admin_client.delete_domain(admin_client.find_domain('cloud_admin_domain'))
+    admin_client.delete_role(admin_client.find_role('cloud_admin'))
 
 if __name__ == "__main__":
     unittest.main()
