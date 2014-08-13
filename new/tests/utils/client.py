@@ -35,6 +35,12 @@ class Client:
     def get_project(self, project):
         return self.client.projects.get(project)
 
+    def list_projects(self, user=None):
+        return self.client.projects.list(user=user)
+
+    def update_project(self, project):
+        return self.client.projects.update(project, description='new description')
+
     def find_group(self, name):
         return self.client.groups.find(name=name)
 

@@ -1,30 +1,27 @@
 import unittest
 
 from keystonetest import *
-
+from util.client import *
 
 class ProjectAdminProjectTestCase(ProjectTestCase, unittest.TestCase):
+    def create_test_client(self):
+        return Client.for_project('test_user', 'test_user', 'test_project', 'test_domain', config.auth_url)
+
     def role_name(self):
         return 'project_admin'
 
     def setUp(self):
         super(ProjectAdminProjectTestCase, self).setUp()
 
-        self.should_get_projects = False
+        self.should_list_projects = False
         self.should_get_own_project_info = True
         self.should_get_any_project_info = False
-        self.should_update_project = False
-        self.should_list_project_users = False
-        self.should_list_project_user_roles = False
-        self.should_list_project_own_roles = False
-        self.should_grant_user_role_in_project = False
-        self.should_check_user_role_in_project = False
-        self.should_revoke_user_role_in_project = False
-        self.should_list_project_group_roles = False
-        self.should_grant_group_role_in_project = False
-        self.should_check_group_role_in_project = False
-        self.should_revoke_group_role_in_project = False
-        self.should_delete_project = False
+        self.should_update_own_project = True
+        self.should_update_any_project = False
+        self.should_delete_own_project = True
+        self.should_delete_any_project = False
+        self.should_list_own_user_projects = True
+        self.should_list_any_user_projects = False
 
 
 def suite():

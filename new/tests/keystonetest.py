@@ -38,7 +38,10 @@ class KeystoneTestCase(unittest.TestCase):
 
     def _delete_projects(self):
         for p in self.projects:
-            self.cloud_admin_client.delete_project(self.projects[p])
+            try:
+                self.cloud_admin_client.delete_project(self.projects[p])
+            except Exception:
+                pass
 
     def _delete_users(self):
         for u in self.users:
@@ -69,6 +72,7 @@ class KeystoneTestCase(unittest.TestCase):
 
         self.cloud_admin_client = Client.for_domain(
                 'cloud_admin', 'cloud_admin', 'cloud_admin_domain', config.auth_url)
+        self.client = self.create_test_client()
 
     def tearDown(self):
         self._delete_roles()
@@ -87,6 +91,10 @@ class KeystoneTestCase(unittest.TestCase):
 
     @abc.abstractmethod
     def role_name(self):
+        pass
+
+    @abc.abstractmethod
+    def create_test_client(self):
         pass
 
 
@@ -242,27 +250,19 @@ class ProjectTestCase(KeystoneTestCase):
                             User('other_user', 'test_domain', 'other_project')])
         self._grant_roles()
 
-        self.client = Client.for_project('test_user', 'test_user', 'test_project', 'test_domain', config.auth_url)
-
-        self.should_get_projects = False
+        self.should_list_projects = False
         self.should_get_own_project_info = False
         self.should_get_any_project_info = False
-        self.should_update_project = False
-        self.should_list_project_users = False
-        self.should_list_project_user_roles = False
-        self.should_list_project_own_roles = False
-        self.should_grant_user_role_in_project = False
-        self.should_check_user_role_in_project = False
-        self.should_revoke_user_role_in_project = False
-        self.should_list_project_group_roles = False
-        self.should_grant_group_role_in_project = False
-        self.should_check_group_role_in_project = False
-        self.should_revoke_group_role_in_project = False
-        self.should_delete_project = False
+        self.should_update_own_project = False
+        self.should_update_any_project = False
+        self.should_delete_own_project = False
+        self.should_delete_any_project = False
+        self.should_list_own_user_projects = False
+        self.should_list_any_user_projects = False
 
-    def test_get_projects(self):
-        with self.throws_no_exception_if(self.should_get_projects):
-            pass
+    def test_list_projects(self):
+        with self.throws_no_exception_if(self.should_list_projects):
+            self.client.list_projects()
 
     def test_get_own_project_info(self):
         with self.throws_no_exception_if(self.should_get_own_project_info):
@@ -272,59 +272,45 @@ class ProjectTestCase(KeystoneTestCase):
         with self.throws_no_exception_if(self.should_get_any_project_info):
             self.client.get_project(self.projects['other_project'])
 
-    def test_update_project(self):
-        with self.throws_no_exception_if(self.should_update_project):
-            pass
+    def test_update_own_project(self):
+        with self.throws_no_exception_if(self.should_update_own_project):
+            self.client.update_project(self.projects['test_project'])
 
-    def test_list_project_users(self):
-        with self.throws_no_exception_if(self.should_list_project_users):
-            pass
+    def test_update_any_project(self):
+        with self.throws_no_exception_if(self.should_update_any_project):
+            self.client.update_project(self.projects['other_project'])
 
-    def test_list_project_user_roles(self):
-        with self.throws_no_exception_if(self.should_list_project_user_roles):
-            pass
+    def test_delete_own_project(self):
+        with self.throws_no_exception_if(self.should_delete_own_project):
+            self.client.delete_project(self.projects['test_project'])
 
-    def test_list_project_own_roles(self):
-        with self.throws_no_exception_if(self.should_list_project_own_roles):
-            pass
+    def test_delete_any_project(self):
+        with self.throws_no_exception_if(self.should_delete_any_project):
+            self.client.delete_project(self.projects['other_project'])
 
-    def test_grant_user_role_in_project(self):
-        with self.throws_no_exception_if(self.should_grant_user_role_in_project):
-            pass
+    def test_list_own_user_projects(self):
+        with self.throws_no_exception_if(self.should_list_own_user_projects):
+            self.client.list_projects(user=self.users['test_user'])
 
-    def test_check_user_role_in_project(self):
-        with self.throws_no_exception_if(self.should_check_user_role_in_project):
-            pass
-
-    def test_revoke_user_role_in_project(self):
-        with self.throws_no_exception_if(self.should_revoke_user_role_in_project):
-            pass
-
-    def test_list_project_group_roles(self):
-        with self.throws_no_exception_if(self.should_list_project_group_roles):
-            pass
-
-    def test_grant_group_role_in_project(self):
-        with self.throws_no_exception_if(self.should_grant_group_role_in_project):
-            pass
-
-    def test_check_group_role_in_project(self):
-        with self.throws_no_exception_if(self.should_check_group_role_in_project):
-            pass
-
-    def test_revoke_group_role_in_project(self):
-        with self.throws_no_exception_if(self.should_revoke_group_role_in_project):
-            pass
-
-    def test_delete_project(self):
-        with self.throws_no_exception_if(self.should_delete_project):
-            pass
-
+    def test_list_any_user_projects(self):
+        with self.throws_no_exception_if(self.should_list_any_user_projects):
+            self.client.list_projects(user=self.users['other_user'])
 
 class UserTestCase(KeystoneTestCase):
+    def _grant_roles(self):
+        self.cloud_admin_client.grant_project_role(
+            self.roles[self.role_name()], self.users['test_user'], self.projects['test_project'])
+        self.cloud_admin_client.grant_project_role(
+            self.roles['test_role'], self.users['other_user'], self.projects['other_project'])
 
     def setUp(self):
         super(UserTestCase, self).setUp()
+        self._create_roles([Role(self.role_name()), Role('test_role')])
+        self._create_domains([Domain('test_domain'), Domain('other_domain')])
+        self._create_projects([Project('test_project', 'test_domain'), Project('other_project', 'test_domain')])
+        self._create_users([User('test_user', 'test_domain', 'test_project'),
+                            User('other_user', 'test_domain', 'other_project')])
+        self._grant_roles()
 
         self.should_add_user = False
         self.should_list_users = False
