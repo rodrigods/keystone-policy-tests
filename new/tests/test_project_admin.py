@@ -4,6 +4,7 @@ from keystonetest import *
 from util.client import *
 
 class ProjectAdminProjectTestCase(ProjectTestCase, unittest.TestCase):
+
     def create_test_client(self):
         return Client.for_project('test_user', 'test_user', 'test_project', 'test_domain', config.auth_url)
 
