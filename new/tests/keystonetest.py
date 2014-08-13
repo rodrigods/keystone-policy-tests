@@ -9,6 +9,7 @@ import unittest
 from utils.client import *
 from utils.models import *
 
+
 class KeystoneTestCase(unittest.TestCase):
     __metaclass__ = abc.ABCMeta
 
@@ -68,7 +69,7 @@ class KeystoneTestCase(unittest.TestCase):
         self.groups = {}
 
         self.cloud_admin_client = Client.for_domain(
-                'cloud_admin', 'cloud_admin', 'cloud_admin_domain', config.auth_url)
+            'cloud_admin', 'cloud_admin', 'cloud_admin_domain', config.auth_url)
 
     def tearDown(self):
         self._delete_roles()
@@ -229,20 +230,29 @@ class ProjectTestCase(KeystoneTestCase):
 
     def _grant_roles(self):
         self.cloud_admin_client.grant_project_role(
-            self.roles[self.role_name()], self.users['test_user'], self.projects['test_project'])
+            self.roles[self.role_name()],
+            self.users['test_user'],
+            self.projects['test_project'])
         self.cloud_admin_client.grant_project_role(
-            self.roles['test_role'], self.users['other_user'], self.projects['other_project'])
+            self.roles['test_role'],
+            self.users['other_user'],
+            self.projects['other_project'])
 
     def setUp(self):
         super(ProjectTestCase, self).setUp()
         self._create_roles([Role(self.role_name()), Role('test_role')])
         self._create_domains([Domain('test_domain')])
-        self._create_projects([Project('test_project', 'test_domain'), Project('other_project', 'test_domain')])
-        self._create_users([User('test_user', 'test_domain', 'test_project'),
-                            User('other_user', 'test_domain', 'other_project')])
+        self._create_projects(
+            [Project('test_project', 'test_domain'),
+             Project('other_project', 'test_domain')])
+        self._create_users(
+            [User('test_user', 'test_domain', 'test_project'),
+             User('other_user', 'test_domain', 'other_project')])
         self._grant_roles()
 
-        self.client = Client.for_project('test_user', 'test_user', 'test_project', 'test_domain', config.auth_url)
+        self.client = Client.for_project(
+            'test_user', 'test_user', 'test_project', 'test_domain',
+            config.auth_url)
 
         self.should_get_projects = False
         self.should_get_own_project_info = False
@@ -589,7 +599,8 @@ def tearDownModule():
 
     # clear everything
     admin_client.delete_user(admin_client.find_user('cloud_admin'))
-    admin_client.delete_project(admin_client.find_project('cloud_admin_project'))
+    admin_client.delete_project(
+        admin_client.find_project('cloud_admin_project'))
     admin_client.delete_domain(admin_client.find_domain('cloud_admin_domain'))
     admin_client.delete_role(admin_client.find_role('cloud_admin'))
 
