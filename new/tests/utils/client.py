@@ -20,10 +20,10 @@ class Client:
     @classmethod
     def for_domain(cls, username, password, domain_name, auth_url):
         return Client(keystoneclient.Client(username=username,
-					    password=password,
-					    user_domain_name=domain_name,
-					    domain_name=domain_name,
-					    auth_url=auth_url))
+                                            password=password,
+                                            user_domain_name=domain_name,
+                                            domain_name=domain_name,
+                                            auth_url=auth_url))
 
     def find_domain(self, name):
         return self.client.domains.find(name=name)
@@ -50,8 +50,8 @@ class Client:
 
     def delete_domain(self, name):
         d = self.find_domain(name)
-	self.client.domains.update(d, enabled=False)
-	self.client.domains.delete(d)
+        self.client.domains.update(d, enabled=False)
+        self.client.domains.delete(d)
 
     def create_project(self, project):
         d = self.find_domain(project.domain)
@@ -65,7 +65,7 @@ class Client:
 
     def delete_project(self, name, domain):
         p = self.find_project(name, domain)
-	self.client.projects.delete(p)
+        self.client.projects.delete(p)
 
     def create_user(self, user):
         d = self.find_domain(user.domain)
@@ -82,8 +82,8 @@ class Client:
         return u
 
     def delete_user(self, name):
-	u = self.find_user(name)
-	self.client.users.delete(u)
+        u = self.find_user(name)
+        self.client.users.delete(u)
 
     def create_group(self, group):
         d = self.find_domain(group.domain)
@@ -96,8 +96,8 @@ class Client:
         return g
 
     def delete_group(self, name):
-	u = self.find_group(name)
-	self.client.groups.delete(u)
+        u = self.find_group(name)
+        self.client.groups.delete(u)
 
     def create_role(self, name):
         try:
@@ -107,8 +107,8 @@ class Client:
         return r
 
     def delete_role(self, name):
-	r = self.find_role(name)
-	self.client.roles.delete(r)
+        r = self.find_role(name)
+        self.client.roles.delete(r)
 
     def grant_project_role(self, role, user, project):
         self.client.roles.grant(role, user=user, project=project)
@@ -133,4 +133,3 @@ class Client:
 
     def delete_region(self):
         pass
-

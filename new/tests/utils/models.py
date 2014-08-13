@@ -12,17 +12,20 @@ class Endpoint:
 
 
 class Domain:
+
     def __init__(self, name):
         self.name = name
 
 
 class Project:
+
     def __init__(self, name, domain):
         self.name = name
         self.domain = domain
 
 
 class User:
+
     def __init__(self, name, domain, default_project, email=None):
         self.name = name
         self.password = name
@@ -32,6 +35,7 @@ class User:
 
 
 class Group:
+
     def __init__(self, name, domain):
         self.name = name
         self.domain = domain
@@ -42,6 +46,7 @@ class Credential:
 
 
 class Role:
+
     def __init__(self, name):
         self.name = name
 
