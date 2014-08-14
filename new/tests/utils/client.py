@@ -112,6 +112,9 @@ class Client:
             g = self.find_group(group.name)
         return g
 
+    def get_group(self, group):
+        self.client.groups.get(group)
+
     def delete_group(self, group):
         self.client.groups.delete(group)
 

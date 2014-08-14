@@ -411,6 +411,12 @@ class GroupTestCase(KeystoneTestCase):
             self.roles[self.role_name()], self.users['test_user'], self.projects['test_project'])
         self.cloud_admin_client.grant_domain_role(
             self.roles[self.role_name()], self.users['test_user'], self.domains['test_domain'])
+
+        self.cloud_admin_client.grant_domain_role(
+            self.roles['test_role'], self.users['same_domain_user'], self.domains['test_domain'])
+        self.cloud_admin_client.grant_domain_role(
+            self.roles['test_role'], self.users['other_domain_user'], self.domains['other_domain'])
+
         self.cloud_admin_client.grant_domain_role(
             self.roles['test_role'], self.users['same_domain_user'], self.domains['test_domain'])
         self.cloud_admin_client.grant_domain_role(
@@ -460,41 +466,49 @@ class GroupTestCase(KeystoneTestCase):
         self.should_add_user_in_group_own_domain = False
         self.should_add_user_in_group_any_domain = False
 
-    def test_add_group(self):
-        with self.throws_no_exception_if(self.should_add_group):
-            pass
+    def test_get_group_own_domain(self):
+        with self.throws_no_exception_if(self.should_get_group_own_domain):
+            self.client.get_group(self.groups['test_group'])
 
-    def test_list_groups(self):
-        with self.throws_no_exception_if(self.should_list_groups):
-            pass
+    def test_get_group_any_domain(self):
 
-    def test_get_group(self):
-        with self.throws_no_exception_if(self.should_get_group):
-            pass
+    def test_list_groups_own_domain(self):
 
-    def test_update_group(self):
-        with self.throws_no_exception_if(self.should_update_group):
-            pass
+    def test_list_groups_any_domain(self):
 
-    def test_delete_group(self):
-        with self.throws_no_exception_if(self.should_delete_group):
-            pass
+    def test_list_groups_for_own_user(self):
 
-    def test_list_group_users(self):
-        with self.throws_no_exception_if(self.should_list_group_users):
-            pass
+    def test_list_groups_for_any_user(self):
 
-    def test_add_user_group(self):
-        with self.throws_no_exception_if(self.should_add_user_group):
-            pass
+    def test_create_group_own_domain(self):
 
-    def test_check_user_in_group(self):
-        with self.throws_no_exception_if(self.should_check_user_in_group):
-            pass
+    def test_create_group_any_domain(self):
 
-    def test_revoke_user_in_group(self):
-        with self.throws_no_exception_if(self.should_revoke_user_in_group):
-            pass
+    def test_update_group_own_domain(self):
+
+    def test_update_group_any_domain(self):
+
+    def test_delete_group_own_domain(self):
+
+    def test_delete_group_any_domain(self):
+
+    def test_list_users_in_group_own_domain(self):
+
+    def test_list_users_in_group_any_domain(self):
+
+    def test_remove_user_in_group_own_domain(self):
+
+    def test_remove_user_in_group_any_domain(self):
+
+    def test_check_own_user_in_group(self):
+
+    def test_check_user_in_group_own_domain(self):
+
+    def test_check_user_in_group_any_domain(self):
+
+    def test_add_user_in_group_own_domain(self):
+
+    def test_add_user_in_group_any_domain(self):
 
 
 class CredentialTestCase(KeystoneTestCase):
