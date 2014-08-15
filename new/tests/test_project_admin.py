@@ -4,8 +4,7 @@ from keystonetest import *
 from utils.client import *
 
 
-class ProjectAdminUserTestCase(UserTestCase, unittest.TestCase):
-
+class ProjectAdminTest(RoleBasedTest):
     def create_test_client(self):
         return Client.for_project('test_user', 'test_user', 'test_project',
                                   'test_domain', config.auth_url)
@@ -15,6 +14,10 @@ class ProjectAdminUserTestCase(UserTestCase, unittest.TestCase):
 
     def domain_role_name(self):
         return None
+
+
+class ProjectAdminUserTestCase(UserTestCase, ProjectAdminTest,
+                               unittest.TestCase):
 
     def setUp(self):
         super(ProjectAdminUserTestCase, self).setUp()
@@ -37,17 +40,8 @@ class ProjectAdminUserTestCase(UserTestCase, unittest.TestCase):
         self.should_update_user_password_any_domain = False
 
 
-class ProjectAdminProjectTestCase(ProjectTestCase, unittest.TestCase):
-
-    def create_test_client(self):
-        return Client.for_project('test_user', 'test_user', 'test_project',
-                                  'test_domain', config.auth_url)
-
-    def project_role_name(self):
-        return 'project_admin'
-
-    def domain_role_name(self):
-        return None
+class ProjectAdminProjectTestCase(ProjectTestCase, ProjectAdminTest,
+                                  unittest.TestCase):
 
     def setUp(self):
         super(ProjectAdminProjectTestCase, self).setUp()
@@ -63,17 +57,8 @@ class ProjectAdminProjectTestCase(ProjectTestCase, unittest.TestCase):
         self.should_list_any_user_projects = False
 
 
-class ProjectAdminGroupTestCase(GroupTestCase, unittest.TestCase):
-
-    def create_test_client(self):
-        return Client.for_project('test_user', 'test_user', 'test_project',
-                                  'test_domain', config.auth_url)
-
-    def project_role_name(self):
-        return 'project_admin'
-
-    def domain_role_name(self):
-        return None
+class ProjectAdminGroupTestCase(GroupTestCase, ProjectAdminTest,
+                                unittest.TestCase):
 
     def setUp(self):
         super(ProjectAdminGroupTestCase, self).setUp()

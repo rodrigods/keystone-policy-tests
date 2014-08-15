@@ -10,7 +10,21 @@ from utils.client import *
 from utils.models import *
 
 
-class KeystoneTestCase(unittest.TestCase):
+class RoleBasedTest:
+    @abc.abstractmethod
+    def project_role_name(self):
+        pass
+
+    @abc.abstractmethod
+    def domain_role_name(self):
+        pass
+
+    @abc.abstractmethod
+    def create_test_client(self):
+        pass
+
+
+class KeystoneTestCase(RoleBasedTest, unittest.TestCase):
     __metaclass__ = abc.ABCMeta
 
     def _create_domains(self, domains):
@@ -72,7 +86,8 @@ class KeystoneTestCase(unittest.TestCase):
         self.groups = {}
 
         self.cloud_admin_client = Client.for_domain(
-            'cloud_admin', 'cloud_admin', 'cloud_admin_domain', config.auth_url)
+            'cloud_admin', 'cloud_admin', 'cloud_admin_domain',
+            config.auth_url)
 
     def tearDown(self):
         self._delete_roles()
@@ -80,18 +95,6 @@ class KeystoneTestCase(unittest.TestCase):
         self._delete_groups()
         self._delete_projects()
         self._delete_domains()
-
-    @abc.abstractmethod
-    def project_role_name(self):
-        pass
-
-    @abc.abstractmethod
-    def domain_role_name(self):
-        pass
-
-    @abc.abstractmethod
-    def create_test_client(self):
-        pass
 
     @contextmanager
     def throws_no_exception_if(self, enabled):
