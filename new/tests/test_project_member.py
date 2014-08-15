@@ -4,6 +4,7 @@ from keystonetest import *
 
 
 class ProjectMemberProjectTestCase(ProjectTestCase, unittest.TestCase):
+
     def role_name(self):
         return 'project_member'
 

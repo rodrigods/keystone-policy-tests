@@ -72,7 +72,7 @@ class KeystoneTestCase(unittest.TestCase):
         self.groups = {}
 
         self.cloud_admin_client = Client.for_domain(
-                'cloud_admin', 'cloud_admin', 'cloud_admin_domain', config.auth_url)
+            'cloud_admin', 'cloud_admin', 'cloud_admin_domain', config.auth_url)
 
     def tearDown(self):
         self._delete_roles()
@@ -81,6 +81,18 @@ class KeystoneTestCase(unittest.TestCase):
         self._delete_projects()
         self._delete_domains()
 
+    @abc.abstractmethod
+    def project_role_name(self):
+        pass
+
+    @abc.abstractmethod
+    def domain_role_name(self):
+        pass
+
+    @abc.abstractmethod
+    def create_test_client(self):
+        pass
+
     @contextmanager
     def throws_no_exception_if(self, enabled):
         if enabled:
@@ -88,14 +100,6 @@ class KeystoneTestCase(unittest.TestCase):
         else:
             with self.assertRaises(Exception):
                 yield
-
-    @abc.abstractmethod
-    def role_name(self):
-        pass
-
-    @abc.abstractmethod
-    def create_test_client(self):
-        pass
 
 
 class RegionTestCase(KeystoneTestCase):
@@ -201,31 +205,38 @@ class DomainTestCase(KeystoneTestCase):
             pass
 
     def test_grant_user_role_in_domain(self):
-        with self.throws_no_exception_if(self.should_grant_user_role_in_domain):
+        with self.throws_no_exception_if(
+                self.should_grant_user_role_in_domain):
             pass
 
     def test_check_user_role_in_domain(self):
-        with self.throws_no_exception_if(self.should_check_user_role_in_domain):
+        with self.throws_no_exception_if(
+                self.should_check_user_role_in_domain):
             pass
 
     def test_revoke_user_role_in_domain(self):
-        with self.throws_no_exception_if(self.should_revoke_user_role_in_domain):
+        with self.throws_no_exception_if(
+                self.should_revoke_user_role_in_domain):
             pass
 
     def test_list_domain_group_roles(self):
-        with self.throws_no_exception_if(self.should_list_domain_group_roles):
+        with self.throws_no_exception_if(
+                self.should_list_domain_group_roles):
             pass
 
     def test_grant_group_role_in_domain(self):
-        with self.throws_no_exception_if(self.should_grant_group_role_in_domain):
+        with self.throws_no_exception_if(
+                self.should_grant_group_role_in_domain):
             pass
 
     def test_check_group_role_in_domain(self):
-        with self.throws_no_exception_if(self.should_check_group_role_in_domain):
+        with self.throws_no_exception_if(
+                self.should_check_group_role_in_domain):
             pass
 
     def test_revoke_group_role_in_domain(self):
-        with self.throws_no_exception_if(self.should_revoke_group_role_in_domain):
+        with self.throws_no_exception_if(
+                self.should_revoke_group_role_in_domain):
             pass
 
     def test_delete_domain(self):
@@ -236,18 +247,33 @@ class DomainTestCase(KeystoneTestCase):
 class ProjectTestCase(KeystoneTestCase):
 
     def _grant_roles(self):
-        self.cloud_admin_client.grant_project_role(
-            self.roles[self.role_name()],
-            self.users['test_user'],
-            self.projects['test_project'])
-        self.cloud_admin_client.grant_project_role(
-            self.roles['test_role'],
-            self.users['other_user'],
-            self.projects['other_project'])
+
+        project_role = self.project_role()
+        domain_role = self.domain_role()
+        if project_role is not None:
+            self.cloud_admin_client.grant_project_role(
+                self.roles[self.role_name()],
+                self.users['test_user'],
+                self.projects['test_project'])
+
+        if domain_role is not None:
+            self.cloud_admin_client.grant_domain_role(
+                self.roles[domain_role],
+                self.users['test_user'],
+                self.domains['test_domain'])
+
+        self.cloud_admin_client.grant_domain_role(
+            self.roles['test_role'], self.users['same_domain_user'],
+            self.domains['test_domain'])
+        self.cloud_admin_client.grant_domain_role(
+            self.roles['test_role'], self.users['other_domain_user'],
+            self.domains['other_domain'])
 
     def setUp(self):
         super(ProjectTestCase, self).setUp()
-        self._create_roles([Role(self.role_name()), Role('test_role')])
+        self._create_roles([Role(self.project_role_name()),
+                            Role(self.domain_role_name()),
+                            Role('test_role')])
         self._create_domains([Domain('test_domain')])
         self._create_projects(
             [Project('test_project', 'test_domain'),
@@ -304,46 +330,57 @@ class ProjectTestCase(KeystoneTestCase):
         with self.throws_no_exception_if(self.should_list_any_user_projects):
             self.client.list_projects(user=self.users['other_user'])
 
+
 class UserTestCase(KeystoneTestCase):
+
     def _grant_roles(self):
-        self.cloud_admin_client.grant_project_role(
-            self.roles[self.role_name()], self.users['test_user'], self.projects['test_project'])
+        project_role = self.project_role()
+        domain_role = self.domain_role()
+        if project_role is not None:
+            self.cloud_admin_client.grant_project_role(
+                self.roles[project_role], self.users['test_user'],
+                self.projects['test_project'])
+
+        if domain_role is not None:
+            self.cloud_admin_client.grant_domain_role(
+                self.roles[domain_role], self.users['test_user'],
+                self.domains['test_domain'])
+
         self.cloud_admin_client.grant_domain_role(
-            self.roles[self.role_name()], self.users['test_user'], self.domains['test_domain'])
+            self.roles['test_role'], self.users['same_domain_user'],
+            self.domains['test_domain'])
         self.cloud_admin_client.grant_domain_role(
-            self.roles['test_role'], self.users['same_domain_user'], self.domains['test_domain'])
-        self.cloud_admin_client.grant_domain_role(
-            self.roles['test_role'], self.users['other_domain_user'], self.domains['other_domain'])
+            self.roles['test_role'], self.users['other_domain_user'],
+            self.domains['other_domain'])
 
     def setUp(self):
         super(UserTestCase, self).setUp()
-        self._create_roles([Role(self.role_name()), Role('test_role')])
+        self._create_roles([Role(self.project_role_name()),
+                            Role(self.domain_role_name()),
+                            Role('test_role')])
+
         self._create_domains([Domain('test_domain'), Domain('other_domain')])
         self._create_projects([Project('test_project', 'test_domain')])
-        self._create_users([User('test_user', 'test_domain', 'test_project'),
-                            User('same_domain_user', 'test_domain', 'test_project'),
-                            User('other_domain_user', 'other_domain', 'test_project')])
+        self._create_users([
+            User('test_user', 'test_domain', 'test_project'),
+            User('same_domain_user', 'test_domain', 'test_project'),
+            User('other_domain_user', 'other_domain', 'test_project')])
         self._grant_roles()
         self.client = self.create_test_client()
 
         self.should_get_own_user = False
         self.should_get_user_own_domain = False
         self.should_get_user_any_domain = False
-
         self.should_list_own_domain_users = False
         self.should_list_any_domain_users = False
-
         self.should_create_user_own_domain = False
         self.should_create_user_any_domain = False
-
         self.should_update_own_user = False
         self.should_update_user_own_domain = False
         self.should_update_user_any_domain = False
-
         self.should_delete_own_user = False
         self.should_delete_user_own_domain = False
         self.should_delete_user_any_domain = False
-
         self.should_update_own_user_password = False
         self.should_update_user_password_own_domain = False
         self.should_update_user_password_any_domain = False
@@ -397,118 +434,202 @@ class UserTestCase(KeystoneTestCase):
             self.client.update_user_password(self.users['test_user'])
 
     def test_update_user_password_own_domain(self):
-        with self.throws_no_exception_if(self.should_update_user_password_own_domain):
+        with self.throws_no_exception_if(
+                self.should_update_user_password_own_domain):
             self.client.update_user_password(self.users['same_domain_user'])
 
     def test_update_user_password_any_domain(self):
-        with self.throws_no_exception_if(self.should_update_user_password_any_domain):
+        with self.throws_no_exception_if(
+                self.should_update_user_password_any_domain):
             self.client.update_user_password(self.users['other_domain_user'])
 
 
 class GroupTestCase(KeystoneTestCase):
+
     def _grant_roles(self):
-        self.cloud_admin_client.grant_project_role(
-            self.roles[self.role_name()], self.users['test_user'], self.projects['test_project'])
-        self.cloud_admin_client.grant_domain_role(
-            self.roles[self.role_name()], self.users['test_user'], self.domains['test_domain'])
+        project_role = self.project_role()
+        domain_role = self.domain_role()
+        if project_role is not None:
+            self.cloud_admin_client.grant_project_role(
+                self.roles[self.project_role_name()], self.users['test_user'],
+                self.projects['test_project'])
+
+        if domain_role is not None:
+            self.cloud_admin_client.grant_domain_role(
+                self.roles[self.domain_role_name()], self.users['test_user'],
+                self.domains['test_domain'])
 
         self.cloud_admin_client.grant_domain_role(
-            self.roles['test_role'], self.users['same_domain_user'], self.domains['test_domain'])
+            self.roles['test_role'], self.users['same_domain_user'],
+            self.domains['test_domain'])
         self.cloud_admin_client.grant_domain_role(
-            self.roles['test_role'], self.users['other_domain_user'], self.domains['other_domain'])
+            self.roles['test_role'], self.users['other_domain_user'],
+            self.domains['other_domain'])
 
-        self.cloud_admin_client.grant_domain_role(
-            self.roles['test_role'], self.users['same_domain_user'], self.domains['test_domain'])
-        self.cloud_admin_client.grant_domain_role(
-            self.roles['test_role'], self.users['other_domain_user'], self.domains['other_domain'])
+        self.cloud_admin_client.grant_group_domain_role(
+            self.roles['test_role'], self.users['same_domain_group'],
+            self.domains['test_domain'])
+        self.cloud_admin_client.grant_group_domain_role(
+            self.roles['test_role'], self.users['other_domain_group'],
+            self.domains['other_domain'])
+
+    def _add_users_to_groups(self):
+        self.cloud_admin_client.add_user_to_group(
+            self.groups['same_domain_group'],
+            self.users['test_user'])
+
+        self.cloud_admin_client.add_user_to_group(
+            self.groups['same_domain_group'],
+            self.users['same_domain_user'])
+
+        self.cloud_admin_client.add_user_to_group(
+            self.groups['other_domain_group'],
+            self.users['other_domain_user'])
 
     def setUp(self):
         super(GroupTestCase, self).setUp()
-        self._create_roles([Role(self.role_name()), Role('test_role')])
+        self._create_roles([Role(self.project_role_name()),
+                            Role(self.domain_role_name()),
+                            Role('test_role')])
+
         self._create_domains([Domain('test_domain'), Domain('other_domain')])
         self._create_projects([Project('test_project', 'test_domain')])
-        self._create_users([User('test_user', 'test_domain', 'test_project'),
-                            User('same_domain_user', 'test_domain', 'test_project'),
-                            User('other_domain_user', 'other_domain', 'test_project')])
-        self._create_groups([Group('test_group', 'test_domain'),
-                             Group('other_group', 'other_domain')])
+        self._create_users([
+            User('test_user', 'test_domain', 'test_project'),
+            User('same_domain_user', 'test_domain', 'test_project'),
+            User('other_domain_user', 'other_domain', 'test_project')])
+        self._create_groups([Group('same_domain_group', 'test_domain'),
+                             Group('other_domain_group', 'other_domain')])
         self._grant_roles()
+        self._add_users_to_groups()
         self.client = self.create_test_client()
 
         self.should_get_group_own_domain = False
         self.should_get_group_any_domain = False
-
         self.should_list_groups_own_domain = False
         self.should_list_groups_any_domain = False
-
         self.should_list_groups_for_own_user = False
         self.should_list_groups_for_any_user = False
-
         self.should_create_group_own_domain = False
         self.should_create_group_any_domain = False
-
         self.should_update_group_own_domain = False
         self.should_update_group_any_domain = False
-
         self.should_delete_group_own_domain = False
         self.should_delete_group_any_domain = False
-
-        self.should_list_users_in_group_own_domain = False
-        self.should_list_users_in_group_any_domain = False
-
         self.should_remove_user_in_group_own_domain = False
         self.should_remove_user_in_group_any_domain = False
-
         self.should_check_own_user_in_group = False
         self.should_check_user_in_group_own_domain = False
         self.should_check_user_in_group_any_domain = False
-
         self.should_add_user_in_group_own_domain = False
         self.should_add_user_in_group_any_domain = False
+        #self.should_list_users_in_group_own_domain = False
+        #self.should_list_users_in_group_any_domain = False
 
     def test_get_group_own_domain(self):
         with self.throws_no_exception_if(self.should_get_group_own_domain):
-            self.client.get_group(self.groups['test_group'])
+            self.client.get_group(self.groups['same_domain_group'])
 
     def test_get_group_any_domain(self):
+        with self.throws_no_exception_if(self.should_get_group_any_domain):
+            self.client.get_group(self.groups['other_domain_group'])
 
     def test_list_groups_own_domain(self):
+        with self.throws_no_exception_if(self.should_list_groups_own_domain):
+            self.client.list_groups(domain=self.domains('test_domain'))
 
     def test_list_groups_any_domain(self):
+        with self.throws_no_exception_if(self.should_list_groups_any_domain):
+            self.client.list_groups(domain=self.domains('other_domain'))
 
     def test_list_groups_for_own_user(self):
+        with self.throws_no_exception_if(self.should_list_groups_for_own_user):
+            self.client.list_groups(user=self.users('test_user'))
 
     def test_list_groups_for_any_user(self):
+        with self.throws_no_exception_if(self.should_list_groups_for_any_user):
+            self.client.list_groups(user=self.users('other_domain_user'))
 
     def test_create_group_own_domain(self):
+        with self.throws_no_exception_if(self.should_create_group_own_domain):
+            self.client.create_group(Group('group1', 'test_domain'))
 
     def test_create_group_any_domain(self):
+        with self.throws_no_exception_if(self.should_create_group_any_domain):
+            self.client.create_group(Group('group1', 'other_domain'))
+
+    def _create_group(self, group):
+        g = self.client.create_group(group)
+        self.cloud_admin_client.delete_group(g)
 
     def test_update_group_own_domain(self):
+        with self.throws_no_exception_if(self.should_update_group_own_domain):
+            self.client.update_group(self.groups['same_domain_group'])
 
     def test_update_group_any_domain(self):
+        with self.throws_no_exception_if(self.should_update_group_any_domain):
+            self.client.update_group(self.groups['other_domain_group'])
 
     def test_delete_group_own_domain(self):
+        with self.throws_no_exception_if(self.should_delete_group_own_domain):
+            self.client.delete_group(self.groups['same_domain_group'])
 
     def test_delete_group_any_domain(self):
+        with self.throws_no_exception_if(self.should_delete_group_any_domain):
+            self.client.delete_group(self.groups['other_domain_group'])
 
-    def test_list_users_in_group_own_domain(self):
+    #def test_list_users_in_group_own_domain(self):
 
-    def test_list_users_in_group_any_domain(self):
+    #def test_list_users_in_group_any_domain(self):
 
     def test_remove_user_in_group_own_domain(self):
+        with self.throws_no_exception_if(
+                self.should_remove_user_in_group_own_domain):
+            self.client.remove_user_from_group(
+                self.groups['same_domain_group'],
+                self.users['same_domain_user'])
 
     def test_remove_user_in_group_any_domain(self):
+        with self.throws_no_exception_if(
+                self.should_remove_user_in_group_own_domain):
+            self.client.remove_user_from_group(
+                self.groups['other_domain_group'],
+                self.users['other_domain_user'])
 
     def test_check_own_user_in_group(self):
+        with self.throws_no_exception_if(
+                self.should_check_own_user_in_group):
+            self.client.check_user_in_group(
+                self.groups['same_domain_group'],
+                self.users['test_user'])
 
     def test_check_user_in_group_own_domain(self):
+        with self.throws_no_exception_if(
+                self.should_check_user_in_group_own_domain):
+            self.client.check_user_in_group(
+                self.groups['same_domain_group'],
+                self.users['same_domain_user'])
 
     def test_check_user_in_group_any_domain(self):
+        with self.throws_no_exception_if(
+                self.should_check_user_in_group_any_domain):
+            self.client.check_user_in_group(
+                self.groups['other_domain_group'],
+                self.users['other_domain_user'])
 
     def test_add_user_in_group_own_domain(self):
+        with self.throws_no_exception_if(
+                self.should_check_user_in_group_own_domain):
+            self.client.add_user_to_group(
+                self.groups['same_domain_group'],
+                self.users['other_domain_user'])
 
     def test_add_user_in_group_any_domain(self):
+        with self.throws_no_exception_if(
+                self.should_check_user_in_group_any_domain):
+            self.client.add_user_to_group(
+                self.groups['other_domain_group'],
+                self.users['same_domain_user'])
 
 
 class CredentialTestCase(KeystoneTestCase):
@@ -658,7 +779,8 @@ def setUpModule():
 
     # tests policy to keystone policy path replacing the cloud_admin_domain_id
     replace_domain_id(
-        config.tests_policy, config.keystone_policy_path, cloud_admin_domain.id)
+        config.tests_policy, config.keystone_policy_path,
+        cloud_admin_domain.id)
 
 
 def tearDownModule():

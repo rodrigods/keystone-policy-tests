@@ -3,12 +3,18 @@ import unittest
 from keystonetest import *
 from utils.client import *
 
-class ProjectAdminUserTestCase(UserTestCase, unittest.TestCase):
-    def create_test_client(self):
-        return Client.for_project('test_user', 'test_user', 'test_project', 'test_domain', config.auth_url)
 
-    def role_name(self):
+class ProjectAdminUserTestCase(UserTestCase, unittest.TestCase):
+
+    def create_test_client(self):
+        return Client.for_project('test_user', 'test_user', 'test_project',
+                                  'test_domain', config.auth_url)
+
+    def project_role_name(self):
         return 'project_admin'
+
+    def domain_role_name(self):
+        return None
 
     def setUp(self):
         super(ProjectAdminUserTestCase, self).setUp()
@@ -34,10 +40,14 @@ class ProjectAdminUserTestCase(UserTestCase, unittest.TestCase):
 class ProjectAdminProjectTestCase(ProjectTestCase, unittest.TestCase):
 
     def create_test_client(self):
-        return Client.for_project('test_user', 'test_user', 'test_project', 'test_domain', config.auth_url)
+        return Client.for_project('test_user', 'test_user', 'test_project',
+                                  'test_domain', config.auth_url)
 
-    def role_name(self):
+    def project_role_name(self):
         return 'project_admin'
+
+    def domain_role_name(self):
+        return None
 
     def setUp(self):
         super(ProjectAdminProjectTestCase, self).setUp()
@@ -51,6 +61,42 @@ class ProjectAdminProjectTestCase(ProjectTestCase, unittest.TestCase):
         self.should_delete_any_project = False
         self.should_list_own_user_projects = True
         self.should_list_any_user_projects = False
+
+
+class ProjectAdminGroupTestCase(GroupTestCase, unittest.TestCase):
+
+    def create_test_client(self):
+        return Client.for_project('test_user', 'test_user', 'test_project',
+                                  'test_domain', config.auth_url)
+
+    def project_role_name(self):
+        return 'project_admin'
+
+    def domain_role_name(self):
+        return None
+
+    def setUp(self):
+        super(ProjectAdminGroupTestCase, self).setUp()
+
+        self.should_get_group_own_domain = False
+        self.should_get_group_any_domain = False
+        self.should_list_groups_own_domain = False
+        self.should_list_groups_any_domain = False
+        self.should_list_groups_for_own_user = True
+        self.should_list_groups_for_any_user = False
+        self.should_create_group_own_domain = False
+        self.should_create_group_any_domain = False
+        self.should_update_group_own_domain = False
+        self.should_update_group_any_domain = False
+        self.should_delete_group_own_domain = False
+        self.should_delete_group_any_domain = False
+        self.should_remove_user_in_group_own_domain = False
+        self.should_remove_user_in_group_any_domain = False
+        self.should_check_own_user_in_group = True
+        self.should_check_user_in_group_own_domain = False
+        self.should_check_user_in_group_any_domain = False
+        self.should_add_user_in_group_own_domain = False
+        self.should_add_user_in_group_any_domain = False
 
 
 def suite():

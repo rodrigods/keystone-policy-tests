@@ -1,5 +1,5 @@
 
-import models
+from models import *
 
 from keystoneclient.v3 import client as keystoneclient
 
@@ -10,7 +10,8 @@ class Client:
         self.client = keystone_client
 
     @classmethod
-    def for_project(cls, username, password, project, project_domain, auth_url):
+    def for_project(cls, username, password, project, project_domain,
+                    auth_url):
         return Client(keystoneclient.Client(username=username,
                                             password=password,
                                             user_domain_name=project_domain,
@@ -25,7 +26,6 @@ class Client:
                                             user_domain_name=domain_name,
                                             domain_name=domain_name,
                                             auth_url=auth_url))
-
 
     # DOMAIN
     def create_domain(self, domain):
@@ -66,7 +66,8 @@ class Client:
         return self.client.projects.list(user=user)
 
     def update_project(self, project):
-        return self.client.projects.update(project, description='new description')
+        return self.client.projects.update(project,
+                                           description='new description')
 
     # USER
     def create_user(self, user):
